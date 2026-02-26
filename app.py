@@ -1,78 +1,54 @@
-
 import streamlit as st
-from pathlib import Path
-from PIL import Image
-from satellite import get_comparison_data
-from fusion import calculate_stress_score, classify_stress, get_stress_color
+import folium
+from streamlit_folium import st_folium
+from get_ndvi import get_ndvi
 
-st.set_page_config(
-    page_title="AgniNet – Pre-Visual Crop Stress Detection",
-    page_icon="🌾",
-    layout="wide"
-)
+st.set_page_config(layout="wide")
 
-st.markdown("""
-# 🔥 AgniNet – Pre-Visual Crop Stress Detection
-**Detect crop stress 7–10 days before visible damage**
-""")
+st.title("🌱 Satellite Plant Stress Detection System")
 
-col1, col2, col3 = st.columns([6,1,1])
-with col2:
-    login = st.button("🔑 Login")
-with col3:
-    register = st.button("📝 Register")
+# Default map center
+map_center = [22.7196, 75.8577]
 
-if login:
-    st.info("Login clicked (demo)")
+m = folium.Map(location=map_center, zoom_start=10)
 
-if register:
-    st.info("Register clicked (demo)")
+# Display map
+map_data = st_folium(m, width=1200, height=600)
 
-ASSETS_PATH = Path(__file__).parent / "assets"
-image_path = ASSETS_PATH / "india_map.png"
+if map_data["last_clicked"]:
 
-try:
-    india_map = Image.open(image_path)
-    st.markdown("## India Crop Stress Overview")
-    st.image(india_map, caption="India Crop Map", use_container_width=True)
-except Exception as e:
-    st.error(f"❌ Failed to load India map: {e}")
+    lat = map_data["last_clicked"]["lat"]
+    lon = map_data["last_clicked"]["lng"]
 
-st.markdown("## 🚀 Start Analysis")
+    st.write(f"📍 Selected Location: {lat}, {lon}")
 
-if "start_analysis" not in st.session_state:
-    st.session_state.start_analysis = False
-if "calculate_clicked" not in st.session_state:
-    st.session_state.calculate_clicked = False
+    ndvi = get_ndvi(lat, lon)
 
-if st.button("Start Analysis"):
-    st.session_state.start_analysis = True
+    if ndvi is not None:
+        st.subheader(f"NDVI Value: {ndvi}")
 
-if st.session_state.start_analysis:
-    st.markdown("### Fill Crop & Location Info")
-    
-    crop = st.selectbox("Select Crop", ["Cotton", "Sugarcane", "Wheat", "Grapes", "Soybean"], key="crop")
-    location = st.text_input("Enter Location (City/District)", key="location")
-    climate = st.selectbox("Select Climate", ["Normal", "Hot", "Dry", "Humid"], key="climate")
+        # Risk Classification
+        if ndvi > 0.6:
+            status = "🟢 Healthy"
+            color = "green"
+        elif ndvi > 0.3:
+            status = "🟡 Moderate Stress"
+            color = "orange"
+        else:
+            status = "🔴 High Stress"
+            color = "red"
 
-    if st.button("Calculate Stress"):
-        st.session_state.calculate_clicked = True
+        st.success(f"Plant Condition: {status}")
 
-if st.session_state.calculate_clicked:
-    current, baseline = get_comparison_data()
-    score = calculate_stress_score(current['temp'], current['ndwi'], current['ndvi'])
-    level = classify_stress(score)
-    color = get_stress_color(score)
+        # Add highlighted circle
+        folium.Circle(
+            location=[lat, lon],
+            radius=500,
+            color=color,
+            fill=True,
+            fill_color=color,
+        ).add_to(m)
 
-    st.markdown(f"### Stress Score: {score:.2f} ({level})")
-    st.markdown(
-        f"<div style='background-color:{color};padding:10px;color:white;'>Risk Level Indicator</div>",
-        unsafe_allow_html=True
-    )
-
-    st.write("**Selected Crop:**", st.session_state.crop)
-    st.write("**Location:**", st.session_state.location)
-    st.write("**Climate:**", st.session_state.climate)
-    st.write("**Current Data:**", current)
-    st.write("**Baseline Data:**", baseline)
-    st.success("✅ Analysis complete (demo data)")
+        st_folium(m, width=1200, height=600)
+    else:
+        st.error("Could not retrieve NDVI data.")
