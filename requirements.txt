@@ -1,2 +1,9 @@
 streamlit
 pandas
+fastapi
+uvicorn
+python-multipart
+openai-whisper
+gtts
+pydub
+torch
