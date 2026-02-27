@@ -1,20 +1,14 @@
+from dotenv import load_dotenv
 import os
 import requests
-from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
-
+print("API KEY:", API_KEY)
 def get_climate_data(lat: float, lon: float):
-    """
-    Fetch real-time climate data from OpenWeather API
-    """
-
     if not API_KEY:
-        print("OpenWeather API key not found in .env")
-        return None
+        return {"error": "API key not found"}
 
     try:
         url = (
@@ -25,12 +19,15 @@ def get_climate_data(lat: float, lon: float):
         response = requests.get(url, timeout=10)
 
         if response.status_code != 200:
-            print("OpenWeather API Error:", response.text)
-            return None
+            return {
+                "error": "OpenWeather API failed",
+                "status_code": response.status_code,
+                "response": response.text
+            }
 
         data = response.json()
 
-        climate_data = {
+        return {
             "temperature": data["main"]["temp"],
             "humidity": data["main"]["humidity"],
             "pressure": data["main"]["pressure"],
@@ -38,8 +35,5 @@ def get_climate_data(lat: float, lon: float):
             "weather_condition": data["weather"][0]["description"]
         }
 
-        return climate_data
-
     except Exception as e:
-        print("Climate Fetch Error:", e)
-        return None
+        return {"error": str(e)}
