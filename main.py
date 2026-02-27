@@ -1,24 +1,43 @@
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from database import SessionLocal
-from models import Analysis
 
 from get_ndvi import get_ndvi
 from climate import get_climate_data
 from risk_engine import analyze_risk
 
+from voice import speech_to_text, text_to_speech
+from agninet_logic import process_farmer_query
+
 app = FastAPI()
 
-# Allow frontend to connect
+# -------------------------------
+# CORS (Allow Frontend)
+# -------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],  # Later restrict to your domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# -------------------------------
+# Create Required Folders
+# -------------------------------
+UPLOAD_DIR = "uploads"
+AUDIO_OUTPUT_DIR = "audio_outputs"
+
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(AUDIO_OUTPUT_DIR, exist_ok=True)
+
+# Serve audio files to frontend
+app.mount("/audio_outputs", StaticFiles(directory="audio_outputs"), name="audio")
+
+
+# =====================================================
+# 🌾 CROP ANALYSIS ENDPOINT
+# =====================================================
 @app.get("/analyze")
 def analyze(lat: float, lon: float):
 
@@ -49,12 +68,3 @@ def analyze(lat: float, lon: float):
         "risk_status": status,
         "risk_color": color
     }
-
-from fastapi import FastAPI
-from climate import get_climate_data
-
-app = FastAPI()
-
-@app.get("/climate")
-def climate(lat: float, lon: float):
-    return get_climate_data(lat, lon)
