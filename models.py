@@ -13,3 +13,11 @@ class Analysis(Base):
     humidity = Column(Float)
     risk_status = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class CropHealth(Base):
+    __tablename__ = "crop_health"
+
+    id = Column(Integer, primary_key=True)
+    ndvi = Column(Float)
+    temperature = Column(Float)
+    humidity = Column(Float)

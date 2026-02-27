@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AGNINET Login</title>
+  <link href="output.css" rel="stylesheet">
+</head>
+
+<body class="bg-[#0B0F1A] flex items-center justify-center min-h-screen text-white">
+
+  <div class="bg-white/5 backdrop-blur-xl p-10 rounded-2xl border border-gray-700 w-96">
+    <h1 class="text-2xl font-bold text-green-400 mb-6 text-center">AGNINET</h1>
+
+    <input type="text" placeholder="Username"
+      class="w-full mb-4 p-3 rounded-xl bg-black/40 border border-gray-600">
+
+    <input type="password" placeholder="Password"
+      class="w-full mb-6 p-3 rounded-xl bg-black/40 border border-gray-600">
+
+    <button onclick="login()"
+      class="w-full bg-green-500 hover:bg-green-400 text-black py-3 rounded-xl font-bold">
+      Login
+    </button>
+  </div>
+
+<script>
+function login(){
+  window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>

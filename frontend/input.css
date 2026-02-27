@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Tab Buttons */
+.tab-btn {
+  padding: 8px 20px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: 0.3s;
+}
+
+.tab-btn:hover {
+  border-color: #00FF9C;
+  color: #00FF9C;
+}
+
+.active-tab {
+  background: #00FF9C20;
+  border-color: #00FF9C;
+  color: #00FF9C;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
